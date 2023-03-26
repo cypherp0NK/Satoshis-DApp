@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer base {
+  [type="email"],
+  [type="tel"],
+  select {
+    @apply w-full border-gray-300 rounded-lg bg-background;
+  }
+}
+html,
+body {
+  background-color: #212121;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+#navItems {
+  display: none;
+}
+hr {
+  opacity: 15%;
+}
+#navMenuIcon {
+  display: none;
+}
+
+@media only screen and (max-width: 768px) {
+  #mobileScreenView {
+    display: none;
+  }
+}
+@media only screen and (max-width: 835px) {
+  #forNav {
+    display: none;
+  }
+  #navMenuIcon {
+    display: flex;
+  }
+  #navItems {
+    background: #121212;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    /* transition: 2000ms; */
+  }
+}
