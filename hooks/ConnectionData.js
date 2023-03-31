@@ -8,11 +8,9 @@ import Aggregator from "../data/static/Aggregator.json";
 import { formatUnits } from "@ethersproject/units";
 import NavBarSettings from "@/components/settings";
 
-const web3modalStorageKey = "WEB3_CONNECT_CACHED_PROVIDER";
-
 export default function ConnectionData() {
-  const { address, setAddress } = NavBarSettings();
-  //const [address, setAddress] = useState(undefined);
+  const { setEthBalance } = NavBarSettings();
+  const [address, setAddress] = useState(undefined);
   const [error, setError] = useState(false);
   const [network, setNetwork] = useState();
   const stakingAddress = "0x7666CA32eF844Ff435506568f66D6de6792e8425"; //mainnet: 0x7666CA32eF844Ff435506568f66D6de6792e8425 testnet: 0x2f61A303be2c16cFf99D0FeE5698341C5E8d31dE
@@ -25,9 +23,12 @@ export default function ConnectionData() {
   const aggregatorABI = Aggregator.abi;
   const [currentDay, setCurrentDay] = useState("---");
   const [launchTime, setLaunchTime] = useState(0);
+  const [lobbySats, setLobbySats] = useState("---");
+  const [lobbyEth, setLobbyEth] = useState("---");
   const [userActiveStakes, setUserActiveStakes] = useState([]);
   const [userStakesHistory, setStakesUserHistory] = useState([]);
   const [userMatureStakes, setUserMatureStakes] = useState([]);
+  const [userLobbyEntries, setUserLobbyEntries] = useState([]);
 
   const web3Modal =
     typeof window !== "undefined" && new Web3Modal({ cacheProvider: true });
@@ -37,7 +38,11 @@ export default function ConnectionData() {
       const signer = provider.getSigner();
       if (signer) {
         const web3Address = await signer.getAddress();
+        const balance = await provider.getBalance(web3Address);
+        const formattedBalance =
+          balance / 1e18 < 0.001 ? 0 : parseFloat(balance / 1e18).toFixed(3);
         setAddress(web3Address);
+        setEthBalance(formattedBalance);
         return web3Address;
       }
     } catch (error) {
@@ -123,6 +128,8 @@ export default function ConnectionData() {
     const priceFeed = parseFloat(formatUnits(feedAnswers[1], 8));
 
     const satsToUSD = satsToEth * priceFeed;
+
+    //const satsToUSD = 1;
 
     /**Stake Details**/
     const stakingContract = new ethers.Contract(stakingAddress, abi, provider);
@@ -245,6 +252,39 @@ export default function ConnectionData() {
     setUserMatureStakes(matureStakes);
   }
 
+  async function getLobbyEntries(provider) {
+    const stakingContract = new ethers.Contract(stakingAddress, abi, provider);
+    const daysEntered = await stakingContract.lobbyMemberDaysLength(address);
+    //const daysEntered = 2;
+    const lobbyEntriesLength = parseInt(daysEntered);
+
+    let dayArray = [];
+
+    for (let i = 0; i < lobbyEntriesLength; i++) {
+      const entryDay = await stakingContract.lobbyMapping(address, i);
+
+      const userEntries = await stakingContract.lobby(entryDay, address, 0);
+
+      const satsInLobby = await stakingContract.lobbyCut(entryDay);
+
+      const ethInLobby = await stakingContract.lobbyTotalEth(entryDay);
+
+      const ethStartedWith = parseFloat(formatUnits(userEntries[0], 18));
+      const formatSATS = parseFloat(formatUnits(satsInLobby, 9));
+      const formatEthInLobby = parseFloat(formatUnits(ethInLobby, 18));
+
+      dayArray.push({
+        id: i,
+        entryDay: parseInt(entryDay),
+        ethStartedWith: ethStartedWith,
+        satsInLobby: formatSATS.toFixed(3),
+        ethInLobby: formatEthInLobby.toFixed(3),
+      });
+    }
+
+    setUserLobbyEntries(dayArray);
+  }
+
   function getExpectedReward(sats, duration) {
     const longerPaysBetter = (sats * duration) / 1820;
     const biggerPaysBetter = sats < 1e6 ? sats ** 2 / 21e9 : 4e4;
@@ -255,10 +295,17 @@ export default function ConnectionData() {
     const stakingContract = new ethers.Contract(stakingAddress, abi, provider);
     const currentDay = await stakingContract.currentDay();
     const launchTime = await stakingContract.LaunchTime();
+    const satsInTodaysLobby = await stakingContract.lobbyCut(currentDay);
+    const ethInTodaysLobby = await stakingContract.lobbyTotalEth(currentDay);
+
     const simplifiedDay = parseInt(currentDay);
     const simplifiedLaunchTime = parseFloat(launchTime);
+    const simplifiedSatsInLobby = parseFloat(formatUnits(satsInTodaysLobby, 9));
+    const simplifiedEthInLobby = parseFloat(formatUnits(ethInTodaysLobby, 18));
     setCurrentDay(simplifiedDay.toString());
     setLaunchTime(simplifiedLaunchTime);
+    setLobbySats(simplifiedSatsInLobby.toFixed(3).toString());
+    setLobbyEth(simplifiedEthInLobby.toFixed(3).toString());
   }
 
   async function getPrice(provider) {
@@ -275,32 +322,12 @@ export default function ConnectionData() {
     }
   }
 
-  useEffect(() => {
-    async function checkConnection() {
-      try {
-        if (window && window.ethereum) {
-          // Check if web3modal wallet connection is available on storage
-          if (localStorage.getItem(web3modalStorageKey)) {
-            await connectToWallet();
-          }
-        } else {
-          console.log("window or window.ethereum is not available");
-        }
-      } catch (error) {
-        console.log(error, "Catch error Account is not connected");
-      }
-    }
-    if (!address) {
-      checkConnection();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return {
     address,
     userActiveStakes,
     userStakesHistory,
     userMatureStakes,
+    userLobbyEntries,
     error,
     network,
     connectToWallet,
@@ -308,8 +335,11 @@ export default function ConnectionData() {
     tokenAddress,
     getBalance,
     currentDay,
+    lobbySats,
+    lobbyEth,
     getCurrentDay,
     getPrice,
     getStakes,
+    getLobbyEntries,
   };
 }

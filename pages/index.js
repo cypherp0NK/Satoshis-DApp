@@ -8,6 +8,7 @@ import Sidebar from "@/components/sidebar";
 import NavBarSettings from "@/components/settings";
 import { ethers, providers } from "ethers";
 import Web3Modal from "web3modal";
+const web3modalStorageKey = "WEB3_CONNECT_CACHED_PROVIDER";
 
 function Spinner() {
   return (
@@ -20,15 +21,20 @@ export default function Home() {
     typeof window !== "undefined" && new Web3Modal({ cacheProvider: true });
 
   const {
+    address,
     userActiveStakes,
     userStakesHistory,
     userMatureStakes,
+    userLobbyEntries,
     currentDay,
+    lobbySats,
+    lobbyEth,
     connectToWallet,
     getCurrentDay,
     getPrice,
     getStakes,
     getBalance,
+    getLobbyEntries,
   } = ConnectionData();
   const [satsAmount, setSatsAmount] = useState("");
   const [duration, setDuration] = useState("");
@@ -39,23 +45,31 @@ export default function Home() {
   const [stakerArraySlot, setStakerArraySlot] = useState("");
   const [warningModal, setWarningModal] = useState(true);
   const [secondLoading, setSecondLoading] = useState(false);
+  const [ethAmount, setEthAmount] = useState("");
+  const [referralAddress, setReferralAddress] = useState("");
 
   const {
-    address,
+    ethBalance,
     isNavBarOpen,
     openNavbar,
     isStakeTab,
     isMatureUnstakeTab,
     isUnstakeTab,
+    isEnterLobbyTab,
+    isExitLobbyTab,
     openStakeTab,
     openMatureUnstakeTab,
     openUnstakeTab,
+    openEnterLobbyTab,
+    openExitLobbyTab,
   } = NavBarSettings();
 
   const {
     stake,
     matureUnstake,
     unstake,
+    enterLobby,
+    exitLobby,
     loading,
     approveHash,
     stakeHash,
@@ -92,7 +106,7 @@ export default function Home() {
         setStakeError("no wallet was detected");
       }
     } catch (error) {
-      setStakeError(error.message.slice(0, 15).concat("..."));
+      setStakeError(error.message.slice(0, 25).concat("..."));
     }
   };
 
@@ -103,7 +117,15 @@ export default function Home() {
         setStakeError("no wallet was detected");
       }
     } catch (error) {
-      setStakeError(error.message.slice(0, 15).concat("..."));
+      setStakeError(error.message.slice(0, 25).concat("..."));
+    }
+  };
+
+  const handleEnterLobby = async (amt, ref) => {
+    try {
+      await enterLobby(amt, ref);
+    } catch (error) {
+      setStakeError(error.message.slice(0, 25).concat("..."));
     }
   };
 
@@ -135,6 +157,23 @@ export default function Home() {
     } catch (error) {
       setStakeError(error.message.slice(0, 25).concat("..."));
     }
+  };
+
+  const maxEthBalance = async () => {
+    setEthAmount(ethBalance.toString());
+  };
+
+  const handleEthAmountChange = (event) => {
+    const newEthAmount = event.target.value === "" ? "" : event.target.value;
+    if (!isNaN(newEthAmount)) {
+      setEthAmount(newEthAmount);
+    } else {
+      return;
+    }
+  };
+
+  const handleReferralAddress = (event) => {
+    setReferralAddress(event.target.value);
   };
 
   function calculate() {
@@ -193,12 +232,14 @@ export default function Home() {
       let distributedProvider = new ethers.providers.Web3Provider(connection);
       getStakes(distributedProvider);
       getToday(distributedProvider);
+      getLobbyEntries(distributedProvider);
     } else {
       let centralProvider = new providers.JsonRpcProvider(
         "https://eth-mainnet.g.alchemy.com/v2/dpjYbCh3TKtompZ4MghsvWUZxJ9YUV7n"
       );
       getStakes(centralProvider);
       getToday(centralProvider);
+      getLobbyEntries(centralProvider);
     }
   }
   async function secondLoadingAnimation() {
@@ -209,42 +250,66 @@ export default function Home() {
   }
 
   useEffect(() => {
-    calculate();
-    if (address) {
-      fetchAllData();
+    async function checkConnection() {
+      try {
+        if (window && window.ethereum) {
+          // Check if web3modal wallet connection is available on storage
+          if (localStorage.getItem(web3modalStorageKey)) {
+            await connectToWallet();
+          }
+        } else {
+          console.log("window or window.ethereum is not available");
+        }
+      } catch (error) {
+        console.log(error, "Catch error Account is not connected");
+      }
     }
 
-    if (approveHash !== "") {
+    calculate();
+    async function fetchingData() {
+      await fetchAllData();
+    }
+    async function resetApproveHash() {
       let timer = setTimeout(() => {
         setApproveHash("");
       }, 10000);
       return () => clearTimeout(timer);
     }
-
-    if (stakeHash !== "") {
+    async function resetStakeHash() {
       fetchAllData();
       let timer = setTimeout(() => {
         setStakeHash("");
       }, 6000);
       return () => clearTimeout(timer);
     }
-
-    if (stakeError !== "") {
+    async function resetStakeError() {
       let timer = setTimeout(() => {
         setStakeError("");
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [
-    satsAmount,
-    duration,
-    address,
-    approveHash,
-    stakeHash,
-    stakeError,
-    calculate,
-    getToday,
-  ]);
+
+    if (!address) {
+      checkConnection();
+    }
+
+    if (address) {
+      fetchingData();
+    }
+
+    if (approveHash !== "") {
+      resetApproveHash();
+    }
+
+    if (stakeHash !== "") {
+      resetStakeHash();
+    }
+
+    if (stakeError !== "") {
+      resetStakeError();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [satsAmount, duration, address, approveHash, stakeHash, stakeError]);
 
   return (
     <>
@@ -383,21 +448,34 @@ export default function Home() {
                   UNSTAKE
                 </div>
               )}
-
-              <div className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-600 lg:border-r-2 lg:border-background">
-                <span className="pr-1.5">ENTER</span>
-                <span>LOBBY</span>
-                <span className="text-xs bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 text-transparent bg-clip-text">
-                  soon
-                </span>
-              </div>
-              <div className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-600">
-                <span className="pr-1.5">EXIT</span>
-                <span>LOBBY</span>
-                <span className="text-xs bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 text-transparent bg-clip-text">
-                  soon
-                </span>
-              </div>
+              {isEnterLobbyTab ? (
+                <div className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-300 lg:border-r-2 lg:border-background">
+                  <span className="pr-1.5">ENTER</span>
+                  <span>LOBBY</span>
+                </div>
+              ) : (
+                <div
+                  onClick={openEnterLobbyTab}
+                  className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-600 lg:border-r-2 lg:border-background"
+                >
+                  <span className="pr-1.5">ENTER</span>
+                  <span>LOBBY</span>
+                </div>
+              )}
+              {isExitLobbyTab ? (
+                <div className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-300">
+                  <span className="pr-1.5">EXIT</span>
+                  <span>LOBBY</span>
+                </div>
+              ) : (
+                <div
+                  onClick={openExitLobbyTab}
+                  className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-600"
+                >
+                  <span className="pr-1.5">EXIT</span>
+                  <span>LOBBY</span>
+                </div>
+              )}
             </div>
             <div className="flex self-end justify-between">
               <div className="cursor-pointer bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 p-0.5 rounded-lg">
@@ -978,6 +1056,211 @@ export default function Home() {
                     ) : (
                       <div className="text-gray-300 text-base m-auto h-full pb-6">
                         You have no stakes
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : isEnterLobbyTab ? (
+            <>
+              <div className="bg-cardBlack rounded-xl w-full h-fit p-4 flex flex-row lg:flex-row justify-between">
+                {/* Lobby card */}
+                <div className="w-full p-4 pt-1 pb-4 lg:pb-2 lg:border-background flex flex-col justify-between">
+                  <header className="flex flex-row pb-2 w-full">
+                    <h2 className="block text-lg font-mono text-white pt-1 pr-2">
+                      {"Today's Lobby"}
+                    </h2>
+                  </header>
+
+                  <div className="bg-background lg:w-7/12 mx-auto text-white p-8 lg:px-40 space-y-4 text-base rounded-lg w-full">
+                    <div className="text-white pb-1.5 w-full flex flex-row justify-between">
+                      <span className="pr-8">Current Day:</span>
+                      <span>{currentDay !== "---" ? currentDay : "---"}</span>
+                    </div>
+                    <div className="text-white pb-1.5 w-full flex flex-row justify-between">
+                      <span className="pr-8">SATS In Lobby:</span>
+                      <span>{lobbySats !== "---" ? lobbySats : "---"}</span>
+                    </div>
+
+                    <div className="text-white pb-1.5 w-full flex flex-row justify-between">
+                      <span className="pr-8">ETH In Lobby:</span>
+                      <span>{lobbyEth !== "---" ? lobbyEth : "---"}</span>
+                    </div>
+                  </div>
+                  <header className="space-y-1 pb-4 pt-6 w-full">
+                    <h2 className="block text-lg font-mono text-white -mb-1">
+                      Enter Lobby
+                    </h2>
+                    <p className="text-subtleGray text-sm">
+                      {"Earn SATS from early unstakers"}
+                    </p>
+                  </header>
+
+                  <div className="w-full lg:w-7/12 mx-auto text-white space-y-4 text-base rounded-lg">
+                    <div className="w-full bg-background border mb-3.5 text-sm border-fadedGray rounded-lg p-1.5 pr-3.5 flex justify-between">
+                      <input
+                        placeholder="Enter lobby with an amount in ETH"
+                        type="text"
+                        value={ethAmount}
+                        onChange={handleEthAmountChange}
+                        className="bg-background text-white text-sm spin-button-hidden w-full appearance-none rounded-lg border-transparent focus:border-transparent focus:shadow-none focus:outline-none focus:ring-0"
+                      />
+                      <div
+                        onClick={maxEthBalance}
+                        className="bg-white text-black active:bg-stone-300 font-medium cursor-pointer m-auto flex justify-center py-0.5 px-2 rounded-md"
+                      >
+                        MAX
+                      </div>
+                    </div>
+                    <div className="bg-background mb-3.5 border border-fadedGray rounded-lg p-1.5 flex justify-between">
+                      <input
+                        onChange={handleReferralAddress}
+                        value={referralAddress}
+                        placeholder="Referral address (optional)"
+                        type="text"
+                        className="bg-background text-white text-sm spin-button-hidden w-full appearance-none rounded-lg border-transparent focus:border-transparent focus:shadow-none focus:outline-none focus:ring-0"
+                      />
+                    </div>
+                    <div
+                      onClick={() => {
+                        handleEnterLobby(ethAmount, referralAddress);
+                      }}
+                      className="bg-white my-4 lg:mb-0 text-black active:bg-stone-300 font-medium w-full cursor-pointer flex justify-center py-3.5 rounded-md"
+                    >
+                      ENTER NOW
+                    </div>
+                  </div>
+                </div>
+
+                {/* details */}
+              </div>
+              {/* Third Container */}
+              <div className="bg-cardBlack rounded-xl w-full p-6 pt-4">
+                <header className="space-y-1 pb-4 w-full block text-xl font-mono text-white">
+                  <h2 className="block text-lg font-mono text-white -mb-1">
+                    Your Entries
+                  </h2>
+                  <p className="text-subtleGray text-sm">
+                    All lobbies are open for 24 hours
+                  </p>
+                </header>
+
+                <div className="flex bg-background rounded-xl flex-row text-white justify-between h-full w-full">
+                  <table className="w-full text-xs lg:text-base text-center rounded-lg">
+                    <tbody>
+                      <tr className="h-6">
+                        <td className="border-r-2 border-fadedGray"></td>
+                        <td className="border-r-2 border-fadedGray"></td>
+                        <td className="border-r-2 border-fadedGray"></td>
+                        <td className="border-r-2 border-fadedGray"></td>
+                        <td></td>
+                      </tr>
+                      <tr className="pt-8 border-b-2 border-fadedGray">
+                        <td className="border-r-2 border-fadedGray">Day</td>
+                        <td className="border-r-2 border-fadedGray">
+                          Started With {"(ETH)"}
+                        </td>
+                        <td className="border-r-2 border-fadedGray">
+                          SATS In Lobby
+                        </td>
+                        <td className="border-r-2 border-fadedGray">
+                          ETH In Lobby
+                        </td>
+
+                        <td>Exit Status</td>
+                      </tr>
+
+                      {userLobbyEntries.length !== 0 ? (
+                        userLobbyEntries.map((inLobby) => {
+                          return (
+                            <tr key={inLobby.id} className="h-8 lg:h-14">
+                              <td className="border-r-2 border-fadedGray">
+                                {inLobby.entryDay}
+                              </td>
+                              <td className="border-r-2 border-fadedGray">
+                                {inLobby.ethStartedWith}
+                              </td>
+                              <td className="border-r-2 border-fadedGray">
+                                {inLobby.satsInLobby}
+                              </td>
+                              <td className="border-r-2 border-fadedGray">
+                                {inLobby.ethInLobby}
+                              </td>
+
+                              <td className="md:border-r-2 border-fadedGray">
+                                {parseInt(currentDay) > inLobby.entryDay
+                                  ? "Open"
+                                  : "Closed"}
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ) : (
+                        <tr className="h-8 lg:h-14">
+                          <td className="border-r-2 border-fadedGray"></td>
+                          <td className="border-r-2 border-fadedGray"></td>
+                          <td className="border-r-2 border-fadedGray"></td>
+                          <td className="border-r-2 border-fadedGray"></td>
+                          <td></td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          ) : isExitLobbyTab ? (
+            <>
+              <div className="bg-cardBlack rounded-xl w-full h-fit px-4 py-6 flex flex-col lg:flex-row justify-between">
+                {/* Exit Lobby */}
+                <div className="bg-cardBlack w-full p-4 pt-1 pb-2 space-y-2.5">
+                  <header className="space-y-1 pb-6 md:pb-2 w-full">
+                    <h2 className="block text-lg font-mono text-white -mb-1">
+                      Exit
+                    </h2>
+                    <p className="text-subtleGray text-sm">Leave the lobby</p>
+                  </header>
+
+                  <div className="h-fit flex flex-col justify-center w-full space-y-5">
+                    {userLobbyEntries.length !== 0 ? (
+                      userLobbyEntries.map((inLobby) => {
+                        return (
+                          <div
+                            key={inLobby.id}
+                            className="bg-background text-white p-6 rounded-lg w-full mx-auto lg:w-3/5"
+                          >
+                            <div className="text-white text-sm pb-1.5 w-full flex flex-row justify-between">
+                              <span>Member On:</span>
+                              <span>Day {inLobby.entryDay}</span>
+                            </div>
+                            <div className="text-white text-sm pb-1.5 w-full flex flex-row justify-between">
+                              <span>SATS Left:</span>
+                              <span>{inLobby.satsInLobby}</span>
+                            </div>
+                            <div className="text-white text-sm pb-1.5 w-full flex flex-row justify-between">
+                              <span>Status:</span>
+                              <span>
+                                {parseInt(currentDay) > inLobby.entryDay
+                                  ? "Open"
+                                  : "Opens in 24 hours"}
+                              </span>
+                            </div>
+
+                            <div
+                              onClick={() => {
+                                exitLobby(inLobby.entryDay);
+                              }}
+                              className="bg-white my-4 lg:mb-0 text-black active:bg-stone-300 font-medium w-full cursor-pointer flex justify-center py-3.5 rounded-md"
+                            >
+                              EXIT
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-gray-300 text-base m-auto h-full pb-6">
+                        {"You don't belong to any lobbies"}
                       </div>
                     )}
                   </div>

@@ -58,6 +58,7 @@ export default function useStake() {
           })
           .catch((error) => {
             setLoading(false);
+            const e = error.message.search("message");
             setStakeError(error.message.slice(0, 25).concat("..."));
           });
       }
@@ -80,11 +81,13 @@ export default function useStake() {
           })
           .catch((error) => {
             setLoading(false);
+            const e = error.message.search("message");
             setStakeError(error.message.slice(0, 25).concat("..."));
           });
       }
     } catch (error) {
       setLoading(false);
+      const e = error.message.search("message");
       setStakeError(error.message.slice(0, 25).concat("..."));
     }
   };
@@ -106,6 +109,7 @@ export default function useStake() {
       })
       .catch((error) => {
         setLoading(false);
+        const e = error.message.search("message");
         setStakeError(error.message.slice(0, 25).concat("..."));
       });
   };
@@ -127,7 +131,55 @@ export default function useStake() {
       })
       .catch((error) => {
         setLoading(false);
+        const e = error.message.search("message");
         setStakeError(error.message.slice(0, 25).concat("..."));
+      });
+  };
+
+  const enterLobby = async (ethAmt, referrer) => {
+    const connection = web3Modal && (await web3Modal.connect());
+    const provider = new ethers.providers.Web3Provider(connection);
+    const StakingContract = new ethers.Contract(
+      stakingAddress,
+      abi,
+      provider.getSigner()
+    );
+
+    const refAddr =
+      referrer === "" ? "0x0000000000000000000000000000000000000000" : referrer;
+    const ethToWei = ethers.utils.parseUnits(ethAmt.toString(), 18);
+    StakingContract.enterLobby(refAddr, { value: ethToWei })
+      .then((tx) => {
+        provider.waitForTransaction(tx.hash).then(() => {
+          setStakeHash("https://etherscan.io/tx/".concat(tx.hash));
+        });
+      })
+      .catch((error) => {
+        setLoading(false);
+        const e = error.message.search("message");
+        setStakeError(error.message.slice(e + 30, e + 51).concat("..."));
+      });
+  };
+
+  const exitLobby = async (entryDay) => {
+    const connection = web3Modal && (await web3Modal.connect());
+    const provider = new ethers.providers.Web3Provider(connection);
+    const StakingContract = new ethers.Contract(
+      stakingAddress,
+      abi,
+      provider.getSigner()
+    );
+
+    StakingContract.exitLobby(entryDay - 1)
+      .then((tx) => {
+        provider.waitForTransaction(tx.hash).then(() => {
+          setStakeHash("https://etherscan.io/tx/".concat(tx.hash));
+        });
+      })
+      .catch((error) => {
+        setLoading(false);
+        const e = error.message.search("message");
+        setStakeError(error.message.slice(0, 300).concat("..."));
       });
   };
 
@@ -135,6 +187,8 @@ export default function useStake() {
     stake,
     matureUnstake,
     unstake,
+    enterLobby,
+    exitLobby,
     loading,
     setLoading,
     approveHash,

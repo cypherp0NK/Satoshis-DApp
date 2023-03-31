@@ -11,6 +11,10 @@ export default function Sidebar() {
     openMatureUnstakeTab,
     isUnstakeTab,
     openUnstakeTab,
+    isEnterLobbyTab,
+    openEnterLobbyTab,
+    isExitLobbyTab,
+    openExitLobbyTab,
   } = navBarSettings();
 
   return (
@@ -107,18 +111,48 @@ export default function Sidebar() {
             UNSTAKE
           </div>
         )}
-        <div className="text-subtleGray hover:text-gray-300 hover:text-lg cursor-pointer">
-          <span>ENTER LOBBY</span>{" "}
-          <span className="text-xs bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 text-transparent bg-clip-text">
-            soon
-          </span>
-        </div>
-        <div className="text-subtleGray hover:text-gray-300 hover:text-lg cursor-pointer">
-          <span>EXIT LOBBY</span>{" "}
-          <span className="text-xs bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 text-transparent bg-clip-text">
-            soon
-          </span>
-        </div>
+        {isEnterLobbyTab ? (
+          <div
+            onClick={() => {
+              openEnterLobbyTab();
+              closeNavbar();
+            }}
+            className="cursor-pointer"
+          >
+            ENTER LOBBY
+          </div>
+        ) : (
+          <div
+            onClick={() => {
+              openEnterLobbyTab();
+              closeNavbar();
+            }}
+            className="text-subtleGray hover:text-gray-300 hover:text-lg cursor-pointer"
+          >
+            ENTER LOBBY
+          </div>
+        )}
+        {isExitLobbyTab ? (
+          <div
+            onClick={() => {
+              openExitLobbyTab();
+              closeNavbar();
+            }}
+            className="cursor-pointer"
+          >
+            <span>EXIT LOBBY</span>
+          </div>
+        ) : (
+          <div
+            onClick={() => {
+              openExitLobbyTab();
+              closeNavbar();
+            }}
+            className="text-subtleGray hover:text-gray-300 hover:text-lg cursor-pointer"
+          >
+            <span>EXIT LOBBY</span>
+          </div>
+        )}
       </div>
     </div>
   );
