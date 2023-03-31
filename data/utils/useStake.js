@@ -179,7 +179,7 @@ export default function useStake() {
       .catch((error) => {
         setLoading(false);
         const e = error.message.search("message");
-        setStakeError(error.message.slice(0, 300).concat("..."));
+        setStakeError(error.message.slice(0, 25).concat("..."));
       });
   };
 
