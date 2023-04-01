@@ -111,7 +111,7 @@ export default function Sidebar() {
             UNSTAKE
           </div>
         )}
-        {isEnterLobbyTab ? (
+        {/* {isEnterLobbyTab ? (
           <div
             onClick={() => {
               openEnterLobbyTab();
@@ -131,8 +131,21 @@ export default function Sidebar() {
           >
             ENTER LOBBY
           </div>
-        )}
-        {isExitLobbyTab ? (
+        )} */}
+        <div className="text-subtleGray hover:text-gray-300 hover:text-lg cursor-pointer">
+          <span>ENTER LOBBY</span>
+          <span className="text-xs bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 text-transparent bg-clip-text">
+            soon
+          </span>
+        </div>
+        <div className="text-subtleGray hover:text-gray-300 hover:text-lg cursor-pointer">
+          <span>EXIT LOBBY</span>
+          <span className="text-xs bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 text-transparent bg-clip-text">
+            soon
+          </span>
+        </div>
+
+        {/* {isExitLobbyTab ? (
           <div
             onClick={() => {
               openExitLobbyTab();
@@ -152,7 +165,7 @@ export default function Sidebar() {
           >
             <span>EXIT LOBBY</span>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
