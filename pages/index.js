@@ -448,7 +448,7 @@ export default function Home() {
                   UNSTAKE
                 </div>
               )}
-              {isEnterLobbyTab ? (
+              {/* {isEnterLobbyTab ? (
                 <div className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-300 lg:border-r-2 lg:border-background">
                   <span className="pr-1.5">ENTER</span>
                   <span>LOBBY</span>
@@ -461,8 +461,24 @@ export default function Home() {
                   <span className="pr-1.5">ENTER</span>
                   <span>LOBBY</span>
                 </div>
-              )}
-              {isExitLobbyTab ? (
+              )} */}
+
+              <div className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-600 lg:border-r-2 lg:border-background">
+                <span className="pr-1.5">ENTER</span>
+                <span>LOBBY</span>
+                <span className="text-xs bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 text-transparent bg-clip-text">
+                  soon
+                </span>
+              </div>
+              <div className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-600">
+                <span className="pr-1.5">EXIT</span>
+                <span>LOBBY</span>
+                <span className="text-xs bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 text-transparent bg-clip-text">
+                  soon
+                </span>
+              </div>
+
+              {/* {isExitLobbyTab ? (
                 <div className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-300">
                   <span className="pr-1.5">EXIT</span>
                   <span>LOBBY</span>
@@ -474,8 +490,11 @@ export default function Home() {
                 >
                   <span className="pr-1.5">EXIT</span>
                   <span>LOBBY</span>
+                  <span className="text-xs bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 text-transparent bg-clip-text">
+                    soon
+                  </span>
                 </div>
-              )}
+              )} */}
             </div>
             <div className="flex self-end justify-between">
               <div className="cursor-pointer bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 p-0.5 rounded-lg">
