@@ -136,6 +136,29 @@ export default function useStake() {
       });
   };
 
+  const unstakeFromV1 = async (arraySlot) => {
+    const connection = web3Modal && (await web3Modal.connect());
+    const provider = new ethers.providers.Web3Provider(connection);
+    const v1Contract = new ethers.Contract(
+      "0x7666CA32eF844Ff435506568f66D6de6792e8425",
+      abi,
+      provider.getSigner()
+    );
+
+    v1Contract
+      .unstake(arraySlot)
+      .then((tx) => {
+        provider.waitForTransaction(tx.hash).then(() => {
+          setStakeHash("https://etherscan.io/tx/".concat(tx.hash));
+        });
+      })
+      .catch((error) => {
+        setLoading(false);
+        const e = error.message.search("message");
+        setStakeError(error.message.slice(0, 25).concat("..."));
+      });
+  };
+
   const enterLobby = async (ethAmt, referrer) => {
     const connection = web3Modal && (await web3Modal.connect());
     const provider = new ethers.providers.Web3Provider(connection);
@@ -161,7 +184,7 @@ export default function useStake() {
       });
   };
 
-  const exitLobby = async (entryDay) => {
+  const exitLobby = async (entryDay, entryDaySlot) => {
     const connection = web3Modal && (await web3Modal.connect());
     const provider = new ethers.providers.Web3Provider(connection);
     const StakingContract = new ethers.Contract(
@@ -170,7 +193,7 @@ export default function useStake() {
       provider.getSigner()
     );
 
-    StakingContract.exitLobby(entryDay - 1)
+    StakingContract.exitLobby(entryDay, entryDaySlot)
       .then((tx) => {
         provider.waitForTransaction(tx.hash).then(() => {
           setStakeHash("https://etherscan.io/tx/".concat(tx.hash));
@@ -178,8 +201,30 @@ export default function useStake() {
       })
       .catch((error) => {
         setLoading(false);
-        const e = error.message.search("message");
-        setStakeError(error.message.slice(0, 25).concat("..."));
+        const e = error.message.search("reason");
+        setStakeError(error.message.slice(e + 28, e + 66).concat("..."));
+      });
+  };
+
+  const claimReferralBonus = async (refSlot) => {
+    const connection = web3Modal && (await web3Modal.connect());
+    const provider = new ethers.providers.Web3Provider(connection);
+    const StakingContract = new ethers.Contract(
+      stakingAddress,
+      abi,
+      provider.getSigner()
+    );
+
+    StakingContract.claimReferralBonus(refSlot)
+      .then((tx) => {
+        provider.waitForTransaction(tx.hash).then(() => {
+          setStakeHash("https://etherscan.io/tx/".concat(tx.hash));
+        });
+      })
+      .catch((error) => {
+        setLoading(false);
+        const e = error.message.search("reason");
+        setStakeError(error.message.slice(e + 28, e + 66).concat("..."));
       });
   };
 
@@ -189,6 +234,8 @@ export default function useStake() {
     unstake,
     enterLobby,
     exitLobby,
+    claimReferralBonus,
+    unstakeFromV1,
     loading,
     setLoading,
     approveHash,
