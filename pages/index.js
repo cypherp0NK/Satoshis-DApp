@@ -26,6 +26,8 @@ export default function Home() {
     userStakesHistory,
     userMatureStakes,
     userLobbyEntries,
+    userReferralBonuses,
+    userV1Stakes,
     currentDay,
     lobbySats,
     lobbyEth,
@@ -35,6 +37,8 @@ export default function Home() {
     getStakes,
     getBalance,
     getLobbyEntries,
+    getReferralBonuses,
+    getStakesFromV1,
   } = ConnectionData();
   const [satsAmount, setSatsAmount] = useState("");
   const [duration, setDuration] = useState("");
@@ -57,11 +61,15 @@ export default function Home() {
     isUnstakeTab,
     isEnterLobbyTab,
     isExitLobbyTab,
+    isClaimBonusTab,
+    isUnstakeV1Tab,
     openStakeTab,
     openMatureUnstakeTab,
     openUnstakeTab,
     openEnterLobbyTab,
     openExitLobbyTab,
+    openClaimBonusTab,
+    openUnstakeV1Tab,
   } = NavBarSettings();
 
   const {
@@ -70,6 +78,8 @@ export default function Home() {
     unstake,
     enterLobby,
     exitLobby,
+    claimReferralBonus,
+    unstakeFromV1,
     loading,
     approveHash,
     stakeHash,
@@ -182,7 +192,10 @@ export default function Home() {
     if (satsAmount !== "") sats = parseFloat(satsAmount);
     if (duration !== "") dt = parseInt(duration);
     const longer = (sats * dt) / 1820;
-    const bigger = sats < 1e6 ? sats ** 2 / 21e9 : 4e4;
+    let bigger = 0;
+    if (dt > 181) {
+      bigger = sats < 1e6 ? sats ** 2 / 21e9 : 1e6 ** 2 / 21e9;
+    }
     setLg(longer);
     setBg(bigger);
   }
@@ -233,6 +246,8 @@ export default function Home() {
       getStakes(distributedProvider);
       getToday(distributedProvider);
       getLobbyEntries(distributedProvider);
+      getReferralBonuses(distributedProvider);
+      getStakesFromV1(distributedProvider);
     } else {
       let centralProvider = new providers.JsonRpcProvider(
         "https://eth-mainnet.g.alchemy.com/v2/dpjYbCh3TKtompZ4MghsvWUZxJ9YUV7n"
@@ -240,6 +255,8 @@ export default function Home() {
       getStakes(centralProvider);
       getToday(centralProvider);
       getLobbyEntries(centralProvider);
+      getReferralBonuses(centralProvider);
+      getStakesFromV1(centralProvider);
     }
   }
   async function secondLoadingAnimation() {
@@ -383,6 +400,7 @@ export default function Home() {
                 width={30}
                 height={30}
               />
+
               <div
                 onClick={() => {
                   openNavbar();
@@ -448,7 +466,7 @@ export default function Home() {
                   UNSTAKE
                 </div>
               )}
-              {/* {isEnterLobbyTab ? (
+              {isEnterLobbyTab ? (
                 <div className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-300 lg:border-r-2 lg:border-background">
                   <span className="pr-1.5">ENTER</span>
                   <span>LOBBY</span>
@@ -461,40 +479,54 @@ export default function Home() {
                   <span className="pr-1.5">ENTER</span>
                   <span>LOBBY</span>
                 </div>
-              )} */}
+              )}
 
-              <div className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-600 lg:border-r-2 lg:border-background">
-                <span className="pr-1.5">ENTER</span>
-                <span>LOBBY</span>
-                <span className="text-xs bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 text-transparent bg-clip-text">
-                  soon
-                </span>
-              </div>
-              <div className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-600">
-                <span className="pr-1.5">EXIT</span>
-                <span>LOBBY</span>
-                <span className="text-xs bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 text-transparent bg-clip-text">
-                  soon
-                </span>
-              </div>
-
-              {/* {isExitLobbyTab ? (
-                <div className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-300">
+              {isExitLobbyTab ? (
+                <div className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-300 lg:border-r-2 lg:border-background">
                   <span className="pr-1.5">EXIT</span>
                   <span>LOBBY</span>
                 </div>
               ) : (
                 <div
                   onClick={openExitLobbyTab}
-                  className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-600"
+                  className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-600 lg:border-r-2 lg:border-background"
                 >
                   <span className="pr-1.5">EXIT</span>
                   <span>LOBBY</span>
-                  <span className="text-xs bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 text-transparent bg-clip-text">
-                    soon
+                </div>
+              )}
+              {isClaimBonusTab ? (
+                <div className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-300 lg:border-r-2 lg:border-background">
+                  <span className="pr-1.5">CLAIM</span>
+                  <span>BONUS</span>
+                </div>
+              ) : (
+                <div
+                  onClick={openClaimBonusTab}
+                  className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-600 lg:border-r-2 lg:border-background"
+                >
+                  <span className="pr-1.5">CLAIM</span>
+                  <span>BONUS</span>
+                </div>
+              )}
+              {isUnstakeV1Tab ? (
+                <div className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-300">
+                  <span>UNSTAKE</span>
+                  <span className="pl-1.5 text-sm bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 text-transparent bg-clip-text">
+                    V1
                   </span>
                 </div>
-              )} */}
+              ) : (
+                <div
+                  onClick={openUnstakeV1Tab}
+                  className="cursor-pointer px-4 active:text-gray-300 block my-auto text-base font-mono text-gray-600"
+                >
+                  <span>UNSTAKE</span>
+                  <span className="pl-1.5 text-sm bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 text-transparent bg-clip-text">
+                    V1
+                  </span>
+                </div>
+              )}
             </div>
             <div className="flex self-end justify-between">
               <div className="cursor-pointer bg-gradient-to-r from-yellow-200 to-purple-400 via-red-400 p-0.5 rounded-lg">
@@ -1268,7 +1300,7 @@ export default function Home() {
 
                             <div
                               onClick={() => {
-                                exitLobby(inLobby.entryDay);
+                                exitLobby(inLobby.entryDay, inLobby.id);
                               }}
                               className="bg-white my-4 lg:mb-0 text-black active:bg-stone-300 font-medium w-full cursor-pointer flex justify-center py-3.5 rounded-md"
                             >
@@ -1280,6 +1312,175 @@ export default function Home() {
                     ) : (
                       <div className="text-gray-300 text-base m-auto h-full pb-6">
                         {"You don't belong to any lobbies"}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : isClaimBonusTab ? (
+            <>
+              <div className="bg-cardBlack rounded-xl w-full h-fit px-4 py-6 flex flex-col lg:flex-row justify-between">
+                {/* Exit Lobby */}
+                <div className="bg-cardBlack w-full p-4 pt-1 pb-2 space-y-2.5">
+                  <header className="space-y-1 pb-6 md:pb-2 w-full">
+                    <h2 className="block text-lg font-mono text-white -mb-1">
+                      Referral Bonuses
+                    </h2>
+                    <p className="text-subtleGray text-sm">
+                      Claim your lobby referral bonuses
+                    </p>
+                  </header>
+
+                  <div className="h-fit flex flex-col justify-center w-full space-y-5">
+                    {userReferralBonuses.length !== 0 ? (
+                      userReferralBonuses.map((rfDetails) => {
+                        return (
+                          <div
+                            key={rfDetails.id}
+                            className="bg-background text-white p-6 rounded-lg w-full mx-auto lg:w-3/5"
+                          >
+                            <div className="text-white text-sm pb-1.5 w-full flex flex-row justify-between">
+                              <span>You Invited:</span>
+                              <span>{rfDetails.referee}</span>
+                            </div>
+                            <div className="text-white text-sm pb-1.5 w-full flex flex-row justify-between">
+                              <span>Your Bonus:</span>
+                              <span>{rfDetails.bonus} SATS</span>
+                            </div>
+
+                            <div
+                              onClick={() => {
+                                claimReferralBonus(rfDetails.id);
+                              }}
+                              className="bg-white my-4 lg:mb-0 text-black active:bg-stone-300 font-medium w-full cursor-pointer flex justify-center py-3.5 rounded-md"
+                            >
+                              CLAIM
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-center text-gray-300 text-sm m-auto h-full pb-6">
+                        <div>
+                          {"No referrals yet. Invite others to use the lobby"}
+                        </div>
+                        <div className="text-xs text-gray-400 pt-2">
+                          {
+                            "INFO: If you already referred someone, your bonus will be available when they exit"
+                          }
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : isUnstakeV1Tab ? (
+            <>
+              <div className="bg-cardBlack rounded-xl w-full h-fit px-4 py-6 flex flex-col lg:flex-row justify-between">
+                {/* Unstakes */}
+                <div className="bg-cardBlack w-full p-4 pt-1 pb-2 space-y-2.5">
+                  <header className="space-y-1 pb-6 md:pb-2 w-full">
+                    <h2 className="block text-lg font-mono text-white -mb-1">
+                      Unstake from V1
+                    </h2>
+                    <p className="text-subtleGray text-sm">
+                      All your stakes appear hear
+                    </p>
+                  </header>
+
+                  <div className="h-fit flex flex-col justify-center w-full space-y-5">
+                    {warningModal ? (
+                      <div className="text-gray-400 text-base m-auto h-fit">
+                        <div className="w-full justify-center mx-auto flex flex-row space-x-2">
+                          <span>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="feather feather-alert-circle"
+                            >
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <line x1="12" y1="8" x2="12" y2="12"></line>
+                              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                          </span>
+                          <span className="text-base">
+                            Proceed with Caution
+                          </span>
+                        </div>
+                        <div className="text-xs pt-2 text-center">
+                          Unstaking earlier than your commitment time can lead
+                          to loss of yield or principal
+                        </div>
+
+                        {secondLoading ? (
+                          <div className="bg-stone-300 mt-4 lg:mb-0 text-black gap-2 active:bg-stone-300 font-medium w-full cursor-pointer flex justify-center py-3.5 rounded-md">
+                            <Spinner />
+                            <span>FETCHING STAKES...</span>
+                          </div>
+                        ) : (
+                          <div
+                            onClick={() => {
+                              setSecondLoading(true);
+                              secondLoadingAnimation();
+                            }}
+                            className="bg-white mt-4 lg:mb-0 text-black active:bg-stone-300 font-medium w-full cursor-pointer flex justify-center py-3.5 rounded-md"
+                          >
+                            CONTINUE
+                          </div>
+                        )}
+                      </div>
+                    ) : userV1Stakes.length !== 0 ? (
+                      userV1Stakes.map((v1Stakes) => {
+                        return (
+                          <div
+                            key={v1Stakes.id}
+                            className="bg-background text-white p-6 rounded-lg w-full mx-auto lg:w-3/5"
+                          >
+                            <div className="text-white text-sm pb-1.5 w-full flex flex-row justify-between">
+                              <span>Stake ID:</span>
+                              <span>#{v1Stakes.id}</span>
+                            </div>
+                            <div className="text-white text-sm pb-1.5 w-full flex flex-row justify-between">
+                              <span>Progress:</span>
+                              <span>{v1Stakes.progress}</span>
+                            </div>
+                            <div className="text-white text-sm pb-1.5 w-full flex flex-row justify-between">
+                              <span>Staked:</span>
+                              <span>{v1Stakes.principal} SATS</span>
+                            </div>
+                            <div className="text-white text-sm pb-1.5 w-full flex flex-row justify-between">
+                              <span>Duration:</span>
+                              <span>
+                                {v1Stakes.endDay - v1Stakes.startDay} Days
+                              </span>
+                            </div>
+                            <div className="text-white text-sm pb-1.5 w-full flex flex-row justify-between">
+                              <span>Yield:</span>
+                              <span>{v1Stakes.reward} SATS</span>
+                            </div>
+                            <div
+                              onClick={() => {
+                                unstakeFromV1(v1Stakes.id);
+                              }}
+                              className="bg-white my-4 lg:mb-0 text-black active:bg-stone-300 font-medium w-full cursor-pointer flex justify-center py-3.5 rounded-md"
+                            >
+                              UNSTAKE
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-gray-300 text-base m-auto h-full pb-6">
+                        You have no stakes
                       </div>
                     )}
                   </div>
