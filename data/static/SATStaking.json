@@ -1,6 +1,10 @@
 {
   "abi": [
-    { "inputs": [], "stateMutability": "nonpayable", "type": "constructor" },
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
     {
       "anonymous": false,
       "inputs": [
@@ -175,9 +179,32 @@
       "type": "event"
     },
     {
+      "stateMutability": "payable",
+      "type": "fallback"
+    },
+    {
+      "inputs": [],
+      "name": "BpbScale",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "EndOfLobby",
-      "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "view",
       "type": "function"
     },
@@ -185,7 +212,11 @@
       "inputs": [],
       "name": "FlushAddr",
       "outputs": [
-        { "internalType": "address payable", "name": "", "type": "address" }
+        {
+          "internalType": "address payable",
+          "name": "",
+          "type": "address"
+        }
       ],
       "stateMutability": "view",
       "type": "function"
@@ -193,21 +224,52 @@
     {
       "inputs": [],
       "name": "LaunchTime",
-      "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LpbScale",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [],
       "name": "MaxStakeDuration",
-      "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [],
       "name": "OriginAddr",
-      "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
       "stateMutability": "view",
       "type": "function"
     },
@@ -215,7 +277,11 @@
       "inputs": [],
       "name": "SatoshisVision",
       "outputs": [
-        { "internalType": "contract IERC20", "name": "", "type": "address" }
+        {
+          "internalType": "contract IERC20",
+          "name": "",
+          "type": "address"
+        }
       ],
       "stateMutability": "view",
       "type": "function"
@@ -223,21 +289,101 @@
     {
       "inputs": [],
       "name": "TotalShares",
-      "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "scale",
+          "type": "uint256"
+        }
+      ],
+      "name": "adjustBpbScale",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "scale",
+          "type": "uint256"
+        }
+      ],
+      "name": "adjustLpbScale",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_refSlot",
+          "type": "uint256"
+        }
+      ],
+      "name": "claimReferralBonus",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [],
       "name": "contractBalance",
-      "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [],
       "name": "currentDay",
-      "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "view",
       "type": "function"
     },
@@ -256,7 +402,16 @@
     },
     {
       "inputs": [
-        { "internalType": "uint256", "name": "_entryDay", "type": "uint256" }
+        {
+          "internalType": "uint256",
+          "name": "_entryDay",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_entryDaySlot",
+          "type": "uint256"
+        }
       ],
       "name": "exitLobby",
       "outputs": [],
@@ -264,26 +419,61 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "flushETH",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [
-        { "internalType": "address", "name": "_recipient", "type": "address" }
+        {
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address"
+        }
       ],
       "name": "individualStakesLength",
       "outputs": [
-        { "internalType": "uint256", "name": "", "type": "uint256" },
-        { "internalType": "uint256", "name": "", "type": "uint256" }
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
       ],
       "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [
-        { "internalType": "uint256", "name": "", "type": "uint256" },
-        { "internalType": "address", "name": "", "type": "address" },
-        { "internalType": "uint256", "name": "", "type": "uint256" }
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
       ],
       "name": "lobby",
       "outputs": [
-        { "internalType": "uint256", "name": "ethCheckIn", "type": "uint256" },
+        {
+          "internalType": "uint256",
+          "name": "ethCheckIn",
+          "type": "uint256"
+        },
         {
           "internalType": "address",
           "name": "referralAddress",
@@ -294,42 +484,98 @@
       "type": "function"
     },
     {
-      "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "name": "lobbyCut",
-      "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [
-        { "internalType": "address", "name": "", "type": "address" },
-        { "internalType": "uint256", "name": "", "type": "uint256" }
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
       ],
       "name": "lobbyMapping",
-      "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [
-        { "internalType": "address", "name": "_member", "type": "address" }
+        {
+          "internalType": "address",
+          "name": "_member",
+          "type": "address"
+        }
       ],
       "name": "lobbyMemberDaysLength",
-      "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-      "name": "lobbyTotalEth",
-      "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [
-        { "internalType": "address", "name": "_recipient", "type": "address" },
-        { "internalType": "uint256", "name": "_arraySlot", "type": "uint256" }
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "lobbyTotalEth",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_arraySlot",
+          "type": "uint256"
+        }
       ],
       "name": "matureUnstake",
       "outputs": [],
@@ -339,11 +585,63 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "referralBonus",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "bonus",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "referee",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_ref",
+          "type": "address"
+        }
+      ],
+      "name": "referrerBonusLength",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint256",
           "name": "_satoshiAmount",
           "type": "uint256"
         },
-        { "internalType": "uint256", "name": "_duration", "type": "uint256" }
+        {
+          "internalType": "uint256",
+          "name": "_duration",
+          "type": "uint256"
+        }
       ],
       "name": "stakeSatoshisVision",
       "outputs": [],
@@ -352,34 +650,98 @@
     },
     {
       "inputs": [
-        { "internalType": "address", "name": "", "type": "address" },
-        { "internalType": "uint256", "name": "", "type": "uint256" }
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
       ],
       "name": "stakersArray",
       "outputs": [
-        { "internalType": "uint256", "name": "sats", "type": "uint256" },
-        { "internalType": "uint256", "name": "share", "type": "uint256" },
-        { "internalType": "uint256", "name": "startday", "type": "uint256" },
-        { "internalType": "uint256", "name": "payday", "type": "uint256" },
-        { "internalType": "uint256", "name": "duration", "type": "uint256" }
+        {
+          "internalType": "uint256",
+          "name": "sats",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "share",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "startday",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "payday",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "duration",
+          "type": "uint256"
+        }
       ],
       "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [
-        { "internalType": "address", "name": "", "type": "address" },
-        { "internalType": "uint256", "name": "", "type": "uint256" }
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
       ],
       "name": "stakersHistory",
       "outputs": [
-        { "internalType": "uint256", "name": "sats", "type": "uint256" },
-        { "internalType": "uint256", "name": "share", "type": "uint256" },
-        { "internalType": "int256", "name": "yield", "type": "int256" },
-        { "internalType": "uint256", "name": "startday", "type": "uint256" },
-        { "internalType": "uint256", "name": "payday", "type": "uint256" },
-        { "internalType": "uint256", "name": "duration", "type": "uint256" },
-        { "internalType": "uint256", "name": "closed", "type": "uint256" }
+        {
+          "internalType": "uint256",
+          "name": "sats",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "share",
+          "type": "uint256"
+        },
+        {
+          "internalType": "int256",
+          "name": "yield",
+          "type": "int256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "startday",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "payday",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "duration",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "closed",
+          "type": "uint256"
+        }
       ],
       "stateMutability": "view",
       "type": "function"
@@ -400,18 +762,32 @@
     {
       "inputs": [],
       "name": "timeStamp",
-      "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [
-        { "internalType": "uint256", "name": "_arraySlot", "type": "uint256" }
+        {
+          "internalType": "uint256",
+          "name": "_arraySlot",
+          "type": "uint256"
+        }
       ],
       "name": "unstake",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
     }
   ]
 }
