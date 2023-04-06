@@ -13,8 +13,8 @@ export default function ConnectionData() {
   const [address, setAddress] = useState(undefined);
   const [error, setError] = useState(false);
   const [network, setNetwork] = useState();
-  const stakingAddress = "0x7666CA32eF844Ff435506568f66D6de6792e8425"; //mainnet: 0x7666CA32eF844Ff435506568f66D6de6792e8425 testnet: 0x2f61A303be2c16cFf99D0FeE5698341C5E8d31dE
-  const tokenAddress = "0x6C22910c6F75F828B305e57c6a54855D8adeAbf8"; //mainnet: 0x6C22910c6F75F828B305e57c6a54855D8adeAbf8 testnet: 0xCc5DD33CA0B61cc33A14fFBeBDa0a818ef71223c
+  const stakingAddress = "0x1d85A2c7122489F4d15E5A2C9c03B4Af5298c75D"; //mainnet: 0x7666CA32eF844Ff435506568f66D6de6792e8425 testnet: 0x1d85A2c7122489F4d15E5A2C9c03B4Af5298c75D
+  const tokenAddress = "0xCc5DD33CA0B61cc33A14fFBeBDa0a818ef71223c"; //mainnet: 0x6C22910c6F75F828B305e57c6a54855D8adeAbf8 testnet: 0xCc5DD33CA0B61cc33A14fFBeBDa0a818ef71223c
   const poolAddress = "0xd99E9c449f40BE2809b2c09D4A04114eB559cFaa";
   const aggregatorAddress = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419";
   const { abi } = SATStaking;
@@ -29,6 +29,8 @@ export default function ConnectionData() {
   const [userStakesHistory, setStakesUserHistory] = useState([]);
   const [userMatureStakes, setUserMatureStakes] = useState([]);
   const [userLobbyEntries, setUserLobbyEntries] = useState([]);
+  const [userReferralBonuses, setUserReferralBonuses] = useState([]);
+  const [userV1Stakes, setUserV1Stakes] = useState([]);
 
   const web3Modal =
     typeof window !== "undefined" && new Web3Modal({ cacheProvider: true });
@@ -252,10 +254,49 @@ export default function ConnectionData() {
     setUserMatureStakes(matureStakes);
   }
 
+  async function getStakesFromV1(provider) {
+    /**Stake Details**/
+    const V1Contract = new ethers.Contract(
+      "0x7666CA32eF844Ff435506568f66D6de6792e8425",
+      abi,
+      provider
+    );
+    const stakes = await V1Contract.individualStakesLength(address);
+    const V1StakesLength = parseInt(formatUnits(stakes[0], 0));
+
+    let V1Stakes = [];
+
+    for (let i = 0; i < V1StakesLength; i++) {
+      const structValues = await V1Contract.stakersArray(address, i);
+      const principal = parseFloat(formatUnits(structValues.sats, 9));
+      const duration = parseInt(structValues.duration);
+
+      const startDay = parseInt(
+        (parseFloat(structValues.startday) - launchTime) / 86400
+      );
+      const endDay = startDay + duration;
+      const progress =
+        ((parseInt(currentDay) - startDay) / duration) * 100 > 100
+          ? 100
+          : ((parseInt(currentDay) - startDay) / duration) * 100;
+      const reward = getExpectedReward(principal, duration);
+
+      V1Stakes.push({
+        id: i,
+        startDay: startDay,
+        endDay: endDay,
+        progress: progress.toFixed(2).toString().concat("%"),
+        principal: principal.toFixed(3),
+        reward: reward.toFixed(3),
+      });
+    }
+
+    setUserV1Stakes(V1Stakes);
+  }
+
   async function getLobbyEntries(provider) {
     const stakingContract = new ethers.Contract(stakingAddress, abi, provider);
     const daysEntered = await stakingContract.lobbyMemberDaysLength(address);
-    //const daysEntered = 2;
     const lobbyEntriesLength = parseInt(daysEntered);
 
     let dayArray = [];
@@ -285,9 +326,33 @@ export default function ConnectionData() {
     setUserLobbyEntries(dayArray);
   }
 
+  async function getReferralBonuses(provider) {
+    const stakingContract = new ethers.Contract(stakingAddress, abi, provider);
+    const rfLength = await stakingContract.referrerBonusLength(address);
+
+    let bonusArray = [];
+
+    for (let i = 0; i < parseInt(rfLength); i++) {
+      const refDetails = await stakingContract.referralBonus(address, i);
+
+      if (parseFloat(formatUnits(refDetails.bonus, 9)) > 0) {
+        bonusArray.push({
+          id: i,
+          bonus: parseFloat(formatUnits(refDetails.bonus, 9)),
+          referee: refDetails.referee,
+        });
+      }
+    }
+
+    setUserReferralBonuses(bonusArray);
+  }
+
   function getExpectedReward(sats, duration) {
-    const longerPaysBetter = (sats * duration) / 1820;
-    const biggerPaysBetter = sats < 1e6 ? sats ** 2 / 21e9 : 4e4;
+    let longerPaysBetter = (sats * duration) / 1820;
+    let biggerPaysBetter = 0;
+    if (duration > 181) {
+      biggerPaysBetter = sats < 1e6 ? sats ** 2 / 21e9 : 1e6 ** 2 / 21e9;
+    }
     return longerPaysBetter + biggerPaysBetter;
   }
 
@@ -328,6 +393,8 @@ export default function ConnectionData() {
     userStakesHistory,
     userMatureStakes,
     userLobbyEntries,
+    userReferralBonuses,
+    userV1Stakes,
     error,
     network,
     connectToWallet,
@@ -341,5 +408,7 @@ export default function ConnectionData() {
     getPrice,
     getStakes,
     getLobbyEntries,
+    getReferralBonuses,
+    getStakesFromV1,
   };
 }
